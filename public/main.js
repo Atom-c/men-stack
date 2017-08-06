@@ -35,6 +35,6 @@ del.addEventListener('click', () => {
   })
   .then(data => {
     console.log(data)
-    window.location.reload()
+    window.location.reload(true)
   })
 })
