@@ -8,6 +8,12 @@ const MongoClient = require('mongodb').MongoClient;
 
 app.use(bodyParser.urlencoded({ extended: true }))
 
+app.use(bodyParser.json())
+
+app.set('view engine', 'ejs')
+
+app.use(express.static('public'))
+
 var db
 
 MongoClient.connect('mongodb://atomc:tutorial1@ds021434.mlab.com:21434/commentbox', (err, database) => {
@@ -18,8 +24,13 @@ MongoClient.connect('mongodb://atomc:tutorial1@ds021434.mlab.com:21434/commentbo
   })
 })
 
+
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  db.collection('quotes').find().toArray((err, result) => {
+   if (err) return console.log(err)
+   // renders index.ejs
+   res.render('index.ejs', {quotes: result})
+ })
 })
 
 app.post('/quotes', (req, res) => {
@@ -36,6 +47,18 @@ app.post('/quotes', (req, res) => {
   })
 })
 
-app.get('/', (req, res) => {
-  var cursor = db.collection('quotes').find()
+app.put('/quotes', (req, res) => {
+  db.collection('quotes')
+  .findOneAndUpdate({name: 'Person'}, {
+    $set: {
+      name: req.body.name,
+      quote: req.body.quote
+    }
+  }, {
+    sort: {_id: -1},
+    upsert: true
+  }, (err, result) => {
+    if (err) return res.send(err)
+    res.send(result)
+  })
 })
